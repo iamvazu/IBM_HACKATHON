@@ -1,4 +1,4 @@
-# IBM_HACKATHON
+# IBM_HACKATHON (Product Review using Sentiment Analysis)
 
 Sentiment Analysis of Customer Reviews of various products on e-commerce websites
 The main purpose of the service is to analyze the sentiment's (good,bad,disgusted,angered,etc.) from the textual reviews available on popular e-commerce websites and to classify a product if it is a 'Success' or 'Failure', based on certain pre-decided factors. 
