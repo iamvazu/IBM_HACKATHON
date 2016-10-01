@@ -1,0 +1,193 @@
+Things you’ll need:
+
+    Stamplay account
+    IBM Bluemix account
+    Intercom account
+    Slack account
+
+1. Watson Tone Analyzer API
+
+Before we can use the API, we need to add the service to our Bluemix account and get the API credentials.
+
+    Go to http://www.ibm.com/cloud-computing/bluemix/watson and create an account.
+    Once logged in, select the Catalog tab and enter “watson tone analyzer” in the search input. Click Create to add the service to your account.
+
+    Go to Service Credentials, and copy the username & password values. That’s it, now that we have our credentials in hand let’s head over to Intercom.
+
+2. Intercom API
+
+Next, let’s head over to our Intercom account so we can grab our API credentials.
+
+    Log into your Intercom account and navigate to App Settings > API Keys.
+
+    If you do not have an API Key, create one. After that, copy your credentials and go to Stamplay to setup the workflow.
+
+3. On New Message > Analyze Tone
+
+Back on Stamplay, let’s setup a Flow that will analyze the tone of new messages from Intercom.
+
+    On the left side-bar, select Flows.
+    Select Intercom > New Message from a User.
+
+    Enter your Intercom credentials and click Connect.
+
+    Follow the instructions provided and add the webhook URL to your Intercom integrations. This will notify (trigger) the Flow that there is a new message, passing the Flow the message data at the same time.
+
+    Paste in the Webhook URL, and then check off the following notifications:
+    New Message from a User
+    Reply from a User
+
+    In the following step, click Add Action.
+    Select Watson Tone Analyzer > Analyze tone of text from the dropdown field.
+
+    Enter your Watson Tone Analyzer service credentials and click Connect.
+
+    For the “Text” field, use the dropdown field to the right of the input to dynamically select the incoming body data from step 1 of the Flow.
+
+3.1 Filter The Flow For Negative Tone
+
+Now we need to add a Filter to the Flow so that the action event is only fired if the Filter conditions are met.
+
+    In your Flow, select Add Filter.
+    Before we send a notification to our Slack channel, want to check for the following 4 negative tone scores: Anger, Disgust, Fear, and Sadness. So in the “Property” field, select the dynamic score for each of these negative tones. For the “Condition” field, select (Number) Greater than. Last, enter 0.75 in the “Condition Value” field, as tone strength is scored on scale from 0 to 1 per the Watson Tone Analyzer API docs. Click Save.
+
+3.2 On Negative Tone > Send Slack Notification
+
+Let’s add another action to this Flow that will send a notification to Slack if there is negative tone detected within the message.
+
+    Within the Flow, click Add Action.
+    Select Slack > Post Message.
+
+    Click Connect, then when prompted click Authorize.
+
+    Next, select the Slack channel from the “Channel” dropdown. For the “Message” field, enter “New message from upset user!”.In the “Attachments” section, copy & paste the code below and populate it with your own app values using the JSON selector to the right of the input.
+
+    Attachments let you add more context to a message by referencing images, external websites, and relevant pieces of data. (Read more on attachments)
+
+    Attachments
+
+    [
+    {
+    “color”: “danger”,
+    “title”: “User upset on Intercom”,
+    “title_link”: “{{fCsk.conversation.body.data.item.links.conversation_web}}”,
+    “ts”:”{{fCsk.conversation.body.data.item.conversation_parts.conversation_parts.[0].notified_at}}”,
+    “author_name”: “See {{fCsk.conversation.body.data.item.user.name}} on Intercom”,
+    “author_link”: “https://app.intercom.io/a/apps/{{fCsk.conversation.body.app_id}}/users/{{fCsk.conversation.body.data.item.conversation_message.author.id}}/all-conversations",
+    “author_icon”: “http://flickr.com/icons/bobby.jpg",
+    “text”:”{{fCsk.conversation.body.data.item.conversation_message.body}}”, 
+    “fields”: [
+    {
+    “title”: “Anger”,
+    “value”: “{{KdJR.tone.document_tone.tone_categories.[0].tones.[0].score}}”,
+    “short”: true
+    },
+    {
+    “title”: “Disgust”,
+    “value”: “{{KdJR.tone.document_tone.tone_categories.[0].tones.[1].score}}”,
+    “short”: true
+    },
+    {
+    “title”: “Fear”,
+    “value”: “{{KdJR.tone.document_tone.tone_categories.[0].tones.[2].score}}”,
+    “short”: true
+    },
+    {
+    “title”: “Sadness”,
+    “value”: “{{KdJR.tone.document_tone.tone_categories.[0].tones.[4].score}}”,
+    “short”: true
+    }
+    ]
+    }
+    ]
+
+4. Checkpoint #1
+Screen Shot 2016-06-26 at 8.57.48 AM
+
+Okay, now let’s see this Flow in action by sending in a new message with some text using an angry tone.
+
+    Submit a new message with an angry tone (or other negative tone).
+
+    Next, let’s check to see if the Flow was properly triggered. Go to Flows, click on the logs icon to view the Flow history. If all goes well, you will receive a “success” status. Perfect!
+
+    Now let’s go to our Slack channel and view the notification! Success!
+
+5. On User Reply > Analyze Tone
+
+Okay, now we have our new messages taken care of let’s repeat the same process with user replies.
+
+    Go to Flows > Create a new Flow.
+    Select Intercom > User Replied.
+
+    In the following step, select Add Action.
+    Select Watson Tone Analyzer > Analyze tone of text.
+
+    For the “Text” field, use the dropdown field to the right of the input to dynamically select the incoming body data from step 1 of the Flow.
+
+5.1 Filter The Flow For Negative Tone
+
+Now we need to add a Filter to the Flow so that the action event is only fired if the Filter conditions are met.
+
+    In your Flow, select Add Filter.
+    Before we send a notification to our Slack channel, want to check for the following 4 negative tone scores: Anger, Disgust, Fear, and Sadness. So in the “Property” field, select the dynamic score for each of these negative tones. For the “Condition” field, select (Number) Greater than. Last, enter 0.75 in the “Condition Value” field, as tone strength is scored on scale from 0 to 1 per the Watson Tone Analyzer API docs. Click Save.
+
+5.2 On Negative Tone > Send Slack Notification
+
+Let’s add another action to this Flow that will send a notification to Slack if there is negative tone detected within the reply.
+
+    Within the Flow, click Add Action.
+    Select Slack > Post Message.
+
+    Next, select the Slack channel from the “Channel” dropdown. For the “Message” field, enter “User upset!”.In the “Attachments” section, copy & paste the code below and populate it with your own app values using the JSON selector to the right of the input.
+    Attachments let you add more context to a message by referencing images, external websites, and relevant pieces of data. (Read more on attachments)
+
+    Attachments
+
+    [
+    {
+    “color”: “danger”,
+    “title”: “User upset on Intercom”,
+    “title_link”: “{{xaMU.conversation.body.data.item.links.conversation_web}}”,
+    “ts”:”{{xaMU.conversation.body.data.item.conversation_parts.conversation_parts.[0].notified_at}}”,
+    “author_name”: “See {{xaMU.conversation.body.data.item.conversation_parts.conversation_parts.[0].author.name}} on Intercom”,
+    “author_link”: “https://app.intercom.io/a/apps/{{xaMU.conversation.body.app_id}}/users/{{xaMU.conversation.body.data.item.conversation_message.author.id}}/all-conversations",
+    “author_icon”: “http://flickr.com/icons/bobby.jpg",
+    “text”:”{{xaMU.conversation.body.data.item.conversation_parts.conversation_parts.[0].body}}”, 
+    “fields”: [
+    {
+    “title”: “Anger”,
+    “value”: “{{Kymd.tone.document_tone.tone_categories.[0].tones.[0].score}}”,
+    “short”: true
+    },
+    {
+    “title”: “Disgust”,
+    “value”: “{{Kymd.tone.document_tone.tone_categories.[0].tones.[1].score}}”,
+    “short”: true
+    },
+    {
+    “title”: “Fear”,
+    “value”: “{{Kymd.tone.document_tone.tone_categories.[0].tones.[2].score}}”,
+    “short”: true
+    },
+    {
+    “title”: “Sadness”,
+    “value”: “{{Kymd.tone.document_tone.tone_categories.[0].tones.[4].score}}”,
+    “short”: true
+    }
+    ]
+    }
+    ]
+
+6. Checkpoint #2
+Screen Shot 2016-06-26 at 9.25.15 AM
+
+Okay, now let’s see this Flow in action by sending in a user reply with some text using an angry tone.
+
+    Send a reply to your Intercom account with a negative tone.
+    Next, let’s check to see if the Flow was properly triggered. Go to Flows, click on the logs icon to view the Flow history. If all goes well, you will receive a “success” status. Perfect!
+
+    Now let’s go to our Slack channel and view the notification! Success again!
+
+Conclusion
+
+As you can see, we were easily able to setup an emotion analyzer for our Intercom messages with Watson’s Tone Analyzer API using Stamplay Flows, no coding involved! Now you can be alerted whenever a customer is having a bad experience and step in to save the day, which is sure to increase your customer satisfaction rating :)
