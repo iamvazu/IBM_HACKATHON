@@ -11,3 +11,8 @@ Tech Stack :
 2) API's used - IBM Bluemix Tone Analyzer , Messenger , Slack, IBM Bluemix Language Translator.
 
 
+
+Mainly two approaches will be discussed over here - a) Using threshold valued-classifier.  b) Using IFTTT.
+
+
+
